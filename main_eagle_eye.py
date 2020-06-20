@@ -16,17 +16,7 @@ import FramesProcessing
 import DataVisualization
 
 
-'''
-1. при запуске сделать n снимков с интервалом 10 сек.
-2. после интервал между сниками увеличивается до т1, проверяется есть ли лицо
-3. при обнаружении лица делается несколько снимков с меньшим интервалом т2
-4. интервал снова увеличивается до т1
-
-'''
-
-
 home = os.path.abspath(os.path.dirname(__file__)) # путь к скрипту
-data_dir = home+'/imgs' # путь к изображениям
 
 
 def write_frame(frame, filename, limit_image = 1, cnt_image = 0, flag = False):
@@ -47,16 +37,20 @@ def write_frame(frame, filename, limit_image = 1, cnt_image = 0, flag = False):
     return cnt, flag
 
 
-def create_filename(path_to_dir, additive, execut = '.jpg'):
+# создание имени файла
+def create_filename(path_to_dir, additive, extention = '.jpg'):
+    # path_to_dir - путь к месту сохранения
+    # additive - дополнение к имени файла, добавляется в конец имени
+    # extention - расширение файла
     now = datetime.today()
-    filename = now.strftime('%d%m%y_%H%M%S_')+str(additive)+'.jpg'
+    filename = now.strftime('%d%m%y_%H%M%S_')+str(additive)+extention
     return path_to_dir+'/'+filename
     
 
 
 
 if __name__ == '__main__':
-    img_dir = 'images'
+    img_dir = home+'/images' # путь к папке сохранения
     
     try:
         print('Директория удалена')
@@ -64,30 +58,40 @@ if __name__ == '__main__':
     except:
         print('Директория не найдена')
     
+    # создание директории для сохранения изображений
     os.makedirs(img_dir, exist_ok=True)
-    fp = FramesProcessing.FramesProcess(3,15) # создаю экземпляр класса
+    
+    # создается экземпляр класса обработки кадров
+    # задаются параметры - число строк, число столбцов
+    fp = FramesProcessing.FramesProcess(3,15)
+    
+    # экземпляр класса для построения и отображения графиков
     vd = DataVisualization.VisualData()
     
-    vd.set_config(300,550,[0,0,0])
-    histo = vd.set_bgimage()
+    vd.set_config(300,550,[0,0,0]) # параметры изображения графиков
+    histo = vd.set_bgimage() # "холст" для рисования графиков
     
     
 # ======================================================================
-    cnt_image = 0
-    frames_ok = False
-    framescnt = 0 # счетчик кадров
+    limit_ignore = 20 # число игнорируемых кадров
+    ignore_count = 0  # счетчик игнорируемых кадров
+    cnt_image = 0     # счетчик сделаных снимков
+    write_ok = False  # флаг разрешения записи файла
+    framescnt = 0     # счетчик кадров
+    old_array = [0]   # предыдущий массив
+    new_array = [0]   # новый массив
+    
     cap = cv2.VideoCapture(-1)
-    #cv2.namedWindow('camera')
     cv2.namedWindow('histo')
-    t2 = 0
-    old_array = [0]
-    new_array = [0]
+    
     while True:
+        framescnt += 1 # счет кадров
+        ignore_count += 1 # счет игнорируемых кадров
+        
         ret, frame = cap.read()
         frame = cv2.flip(frame, 1)
-        histo = vd.set_bgimage()
+        histo = vd.set_bgimage() # "холст" для рисования графиков
         
-        framescnt += 1 # подсчет кадров
         key = cv2.waitKey(10)
         
         if key == 13:
@@ -95,37 +99,67 @@ if __name__ == '__main__':
             cv2.destroyAllWindows()
             break
         
-        image = fp.create_image_gray(frame) # gray frame
+        # получается копия кадра в оттенках серого
+        image = fp.create_image_gray(frame)
         y, x = image.shape 
         
+        # проверка изминения размеров кадра
+        # если размеры отличны от начальных
+        # расчитываются новые размеры серого кадра
+        # и координаты секций
+        # используется в дальнейшем, если не изменятся размеры изображения
         if not fp.issizes(y, x):
             print('Issizes False')
             fp.t__get_new_sizes(480, 640)
             fp.t__get_size_to_sections(480, 640)
             fp.get_coords()
         
+        # изминение размера согласно расчетам
         image_rc = fp.resize(image, 'rc')
+        
+        # получение массивов секций
         sections_col = fp.get_sections_quad(image_rc, fp.coord_array_col)
         sections_row = fp.get_sections_quad(image_rc, fp.coord_array_row)
+        
+        # получение массивов средних значений секций
         aver_col = fp.average(sections_col)
         aver_row = fp.average(sections_row)
+        
+        # первый массив для сравнения
         new_array = aver_col
         
+        # создание графика массивов
         histo = vd.bar_graph_image2( frame, [aver_col, aver_row], 
                                      [[250,10,0],[20,250,5]], rotate=0  )
         
-        if framescnt >= 30:
-            print('Сброс счетчика кадров и установка флага в True')
-            frames_ok = True
+        # если прошло N кадров сбрасывается счетчик кадров
+        if framescnt >= 80:
+            print('Сброс счетчика кадров и управляющего счетчика...')
             framescnt = 0
         
-        # проверка  движения
-        if fp.get_diff_arrays_bool(new_array, old_array, 30, 30):
-            filename = create_filename('images', cnt_image)
-            cnt_image, frames_ok = write_frame(histo, filename, 3, cnt_image, frames_ok)
+        # если число игнорируеммых кадров больше N,
+        # сбросить счетчик игнорируемых кадров на ноль
+        # и произвести сравнения массивов
+        if ignore_count > limit_ignore:
+            write_ok = True # разрешить запись файла
             
+            # если разница массивов соответствует заданным параметрам
+            if fp.get_diff_arrays_bool(new_array, old_array, 7, 10):
+                print('Сравнение массивов, массивы не равны')
+                cnt_image += 1 # счет сделаных изображений
+                filename = create_filename(img_dir, cnt_image, '.jpg')
+                cnt_image, write_ok = write_frame(histo, filename, 3, cnt_image, write_ok)
+                if write_ok == False:
+                    ignore_count = 0
+                    framescnt = 0
+            else:
+                print('   Движений нет')
+        else:
+            print('  Игнорируемый кадр')
         
-        #cv2.imshow('camera', image)
+        # второй массив
+        old_array = new_array.copy()
+        
         cv2.imshow('histo', histo)
         
     
