@@ -29,16 +29,20 @@ home = os.path.abspath(os.path.dirname(__file__)) # путь к скрипту
 data_dir = home+'/imgs' # путь к изображениям
 
 
-
-def write_frame(frame, filename, cnt, limit, num_frame = 1):
-    if cnt <= num_frame-1:
-        print('Write image:', filename)
+def write_frame(frame, filename, limit_image = 1, cnt_frames = 0, flag = False):
+    # frame - кадр
+    # filename - полное имя файла
+    # limit_image - какое число изображений подряд сохранить
+    # cnt_frames - счетчик сохраненных изображений
+    # flag - разрешение для записи, если True, то запись разрешена
+    cnt = cnt_frames
+    if flag:
         cv2.imwrite(filename, frame)
-    cnt = cnt + 1
-    if cnt >= limit:
-        return 0
-    return cnt
-
+        cnt += 1
+        if cnt >= limit_image:
+            cnt = 0
+            flag = False
+    return cnt, flag
 
 
 
@@ -95,13 +99,10 @@ if __name__ == '__main__':
         histo = vd.bar_graph_image2( frame, [aver_col, aver_row], 
                                      [[250,10,0],[20,250,5]], rotate=0  )
         
+        # проверка  движения
         if fp.get_diff_arrays_bool(new_array, old_array, 10, 7):
-            filename = img_dir+'/'+str(randint(1000, 100001))+'.jpg'
-            cnt = write_frame(histo, filename, cnt, 100, 3)
-            old_array = new_array.copy()
-            print(' Заданная разница определена...', cnt)
-        cnt += 1
-        
+            # сделать несколько снимков
+            # обнулить отсчет и начать заново
         
         #cv2.imshow('camera', image)
         cv2.imshow('histo', histo)
