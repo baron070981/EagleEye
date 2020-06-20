@@ -29,20 +29,29 @@ home = os.path.abspath(os.path.dirname(__file__)) # путь к скрипту
 data_dir = home+'/imgs' # путь к изображениям
 
 
-def write_frame(frame, filename, limit_image = 1, cnt_frames = 0, flag = False):
+def write_frame(frame, filename, limit_image = 1, cnt_image = 0, flag = False):
     # frame - кадр
     # filename - полное имя файла
     # limit_image - какое число изображений подряд сохранить
     # cnt_frames - счетчик сохраненных изображений
     # flag - разрешение для записи, если True, то запись разрешена
-    cnt = cnt_frames
+    cnt = cnt_image
     if flag:
-        cv2.imwrite(filename, frame)
         cnt += 1
+        cv2.imwrite(filename, frame)
+        print('Сохранение файла:', filename)
         if cnt >= limit_image:
+            print('...Сброс флага в False')
             cnt = 0
             flag = False
     return cnt, flag
+
+
+def create_filename(path_to_dir, additive, execut = '.jpg'):
+    now = datetime.today()
+    filename = now.strftime('%d%m%y_%H%M%S_')+str(additive)+'.jpg'
+    return path_to_dir+'/'+filename
+    
 
 
 
@@ -64,7 +73,9 @@ if __name__ == '__main__':
     
     
 # ======================================================================
-    cnt = 0
+    cnt_image = 0
+    frames_ok = False
+    framescnt = 0 # счетчик кадров
     cap = cv2.VideoCapture(-1)
     #cv2.namedWindow('camera')
     cv2.namedWindow('histo')
@@ -75,7 +86,10 @@ if __name__ == '__main__':
         ret, frame = cap.read()
         frame = cv2.flip(frame, 1)
         histo = vd.set_bgimage()
+        
+        framescnt += 1 # подсчет кадров
         key = cv2.waitKey(10)
+        
         if key == 13:
             cap.release()
             cv2.destroyAllWindows()
@@ -83,6 +97,7 @@ if __name__ == '__main__':
         
         image = fp.create_image_gray(frame) # gray frame
         y, x = image.shape 
+        
         if not fp.issizes(y, x):
             print('Issizes False')
             fp.t__get_new_sizes(480, 640)
@@ -99,10 +114,16 @@ if __name__ == '__main__':
         histo = vd.bar_graph_image2( frame, [aver_col, aver_row], 
                                      [[250,10,0],[20,250,5]], rotate=0  )
         
+        if framescnt >= 30:
+            print('Сброс счетчика кадров и установка флага в True')
+            frames_ok = True
+            framescnt = 0
+        
         # проверка  движения
-        if fp.get_diff_arrays_bool(new_array, old_array, 10, 7):
-            # сделать несколько снимков
-            # обнулить отсчет и начать заново
+        if fp.get_diff_arrays_bool(new_array, old_array, 30, 30):
+            filename = create_filename('images', cnt_image)
+            cnt_image, frames_ok = write_frame(histo, filename, 3, cnt_image, frames_ok)
+            
         
         #cv2.imshow('camera', image)
         cv2.imshow('histo', histo)
