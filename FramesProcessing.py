@@ -42,8 +42,8 @@ class FramesProcess:
         self.__origin_y       = 0
         
         
-        self.coord_array_x      = None   # 
-        self.coord_array_y      = None   # 
+        self.coord_array_x    = None     # 
+        self.coord_array_y    = None     # 
         self.coord_array_row  = None     # 
         self.coord_array_col  = None     # 
         self.newsize          = 320
