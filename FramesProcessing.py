@@ -57,6 +57,7 @@ class FramesProcess:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         #self.__origin_y, self.__origin_x = frame.shape
         return frame
+    # ==================================================
     
     
     def issizes(self, y,x):
