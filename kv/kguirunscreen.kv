@@ -1,0 +1,63 @@
+
+<RunScreen>:
+    name: 'runscreen'
+    id: runscreen
+    MDFloatLayout:
+        adaptive_size: False
+        md_bg_color: .0039, 0, .047, 1
+        
+        AnchorLayout:
+            canvas:
+                Color:
+                    rgba: .039, 0, .047, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            size_hint: [1, .12]
+            anchor_x: "right"
+            anchor_y: "center"
+            
+            MDBoxLayout:
+                adaptive_width:True
+                spacing: "10dp"
+                padding: "10dp"
+                
+                MDFillRoundFlatButton:
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    text: "запуск"
+                    text_color: 0, 1, 0, 1
+                    line_color: 0, 0, 0, 0
+                    md_bg_color: 1, 0, 0, 1
+                    on_press: root.on_run_camera()
+                
+                MDFillRoundFlatButton:
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    text: "стоп"
+                    text_color: 0, 1, 0, 1
+                    line_color: 0, 0, 0, 0
+                    md_bg_color: 1, 0, 0, 1
+        
+        MDBoxLayout:
+            md_bg_color: .0079, 0.011, .087, 1
+            pos_hint: {"top":1}
+            size_hint_y: 0.88
+            adaptive_height: False
+            padding: "10dp"
+            
+            MDLabel:
+                md_bg_color: .79, 0.11, .87, 1
+                border: 5, 5, 5, 5
+            
+            Widget:
+                pos_hint: {"top": 1}
+            
+            
+
+
+
+
+
+
+
+
+

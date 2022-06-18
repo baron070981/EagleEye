@@ -1,70 +1,9 @@
 import cv2
 import numpy as np
 
+from typing import Union
+
 # обработка кадра или его части
-
-
-
-
-
-def get_coords_split_image(frame: np.array, num_frames: int) -> (list, list):
-    '''Разделение '''
-    coords = []
-    # исходные размеры изображения
-    h, w = frame.shape[:2]
-    # размер подизображения
-    size = int(h/num_frames) if h < w else int(w/num_frames)
-    # кол-во подизображений которые вместятся в ширину и в высоту
-    num_y_section = int(h/size)
-    num_x_section = int(w/size)
-    # новые размеры изображения
-    h = num_y_section*size
-    w = num_x_section*size
-    # начальные координаты
-    y = x = 0
-    # получение координат подизображений
-    for i in range(num_y_section):
-        for j in range(num_x_section):
-            coords.append((y, y+size, x, x+size))
-            x += size
-        x = 0
-        y += size
-    return [h, w], [num_y_section, num_x_section], coords
-
-
-def get_mean_colors(array):
-    '''получение средних значений из массива(трехканального изображения) по каждому цвету'''
-    if len(array.shape) != 3:
-        raise Exception('Не подходящая структура массива')
-    b = array[:, :, 0].mean()
-    g = array[:, :, 1].mean()
-    r = array[:, :, 2].mean()
-    return b, g, r
-
-
-def get_mean_sections(arr, size, coords):
-    '''Получение массива средних значений подмассивов из массива
-    coords - (y1, y2, x1, x2)
-    arr - двумерный массив(серое изображение)
-    size - [секций по вертикали, секций по горизонтали]
-    '''
-    means = np.zeros(size, dtype='uint8')
-    i = 0
-    for vert in range(size[0]):
-        for hor in range(size[1]):
-            y1, y2, x1, x2 = coords[i]
-            m = arr[y1:y2, x1:x2].mean()
-            means[vert][hor] = m
-            i += 1
-    return means
-
-
-def is_changed(arr1, arr2, perc=25):
-    m1 = arr1.mean()
-    m2 = arr2.mean()
-    dif = abs(m1-m2)
-    return max([m1, m2])/100*dif >= perc
-
 
 
 
@@ -86,7 +25,6 @@ class Frame:
         h, w = size
         if self.__origin_size is None or self.__origin_size != size:
             self.__origin_size = size
-            print('Getting new size and num sections...', self.__size, size)
             # размер секции
             section_size = int(min(size)/self.num_sections)
             # кол-во секций
@@ -98,6 +36,8 @@ class Frame:
             
             self.__sections = section_ver, section_hor
             self.__size = new_h, new_w
+            print(f'Get num sect... Size: {self.__size}, secton_size: {self.__sections}', end=', ')
+            print(f'total sections: {section_ver*section_hor}, size 1 sect: {section_size}')
         return self.__size, self.__sections
     
     
@@ -134,7 +74,8 @@ class Frame:
         return self.__coords
     
     
-    def get_means_color(self, frame):
+    def get_means_color(self, frame: np.array) -> list:
+        # средние значения каждой секции по каждому каналу
         ysec, xsec = self.__sections
         means = []
         for y1,y2,x1,x2 in self.coords:
@@ -143,17 +84,55 @@ class Frame:
         return means
     
     
+    def get_means(self, gray: np.array) -> list:
+        # среднее значение каждой секции
+        ysec, xsec = self.__sections
+        means = []
+        for y1,y2,x1,x2 in self.coords:
+            tmp = gray[y1:y2, x1:x2]
+            means.append(tmp.mean())
+        return means
+    
+    
+    def __diff_percentege(self, num1, num2):
+        pr = self.__percentege(num1, num2)
+        return 100-pr
+    
+    
     def __percentege(self, num1, num2):
-        dif = abs(float(num1)-float(num2))
-        return max([num1, num2])/100*dif
+        num1 = num1 if num1 > 0 else 0.01
+        num2 = num2 if num2 > 0 else 0.01
+        k = max([num1, num2])/min([num1, num2])
+        return 100/k
     
     
     def get_percentege3(self, arr1, arr2):
         arr1 = np.array(arr1).ravel()
         arr2 = np.array(arr2).ravel()
-        p = list(map(lambda x, y: self.__percentege(x, y), arr1, arr2))
+        p = list(map(lambda x, y: self.__diff_percentege(x, y), arr1, arr2))
         return max(p)
-
+    
+    
+    def get_diff_percentege(self, num1, num2):
+        return self.__percentege(num1, num2)
+    
+    
+    def get_percentege_threshold(self, num1, num2, threshold):
+        return self.__percentege(num1, num2) >= threshold
+    
+    
+    def get_threshold_diff_percenteg(self, array1: list, array2: list, threshold: float) -> list:
+        perc = list(map(lambda x, y: self.__diff_percentege(x, y), array1, array2))
+        res = list(map(lambda x: x >= threshold, perc))
+        return res
+    
+    
+    def update(self, num_sections):
+        if num_sections != self.num_sections:
+            self.num_sections = num_sections
+            self.__origin_size = None
+            self.__coords = []
+            
 
 
 
@@ -167,12 +146,10 @@ def show(img):
 
 
 if __name__ == "__main__":
-    frame = Frame(3)
-    image = cv2.imread('pri.jpg')
-    print(image.shape)
-    coords = frame.get_means_color(image)
-    print(coords)
-    show(image)
+    frame = Frame(10)
+    arr1 = [1, 0]
+    arr2 = [100, 100]
+    print(list(map(lambda x, y: frame.get_percentege(x, y), arr1, arr2)))
 
 
 

@@ -42,14 +42,14 @@ def get_perc(image_mean):
 
 
 if __name__ == "__main__":
-    ID = 2
+    ID = 0
     # 
     frame = framesprocessing.Frame(21)
-    f = files.Files('images', 1000, waiting_time=10, num_save=3)
+    f = files.Files('images', 1000, waiting_time=15, num_save=4)
     # 
     cam = camera.Camera(800, camera_id=ID)
     # 
-    timer = files.Timer(5)
+    timer = files.Timer(7)
     CLEAR = False  # флаг очистки экрана от вывода движения
     last_means = None  # предыдущий кадр
     CHANGED = []
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         cv2.putText(origin, get_timestr(), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,50,250), 2)
         if last_means:
             for i, m in enumerate(means):
-                if frame.get_percentege3(m, last_means[i]) >= 19:
+                if frame.get_percentege3(m, last_means[i]) >= 17:
                     CHANGED.append(frame.coords[i])
         if len(CHANGED)/(len(means)/100) >= 8 and not CLEAR:
             cv2.imshow('img', origin)

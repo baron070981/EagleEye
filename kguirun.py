@@ -1,18 +1,4 @@
-from screeninfo import get_monitors
-
-mon = get_monitors()
-w = mon[0].width
-h = mon[0].height
-
-
-from kivy.config import Config
-Config.set('graphics','width',f'{w}')
-Config.set('graphics','height',f'{h}')
-
-
 from kivymd.app import MDApp
-from kivymd.uix.textfield import MDTextField
-from kivymd.uix.label import MDLabel
 from kivymd.uix.list import OneLineListItem
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
@@ -28,61 +14,58 @@ from kivy.properties import ObjectProperty
 from kivy.properties import StringProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from kivy.properties import BooleanProperty
+from kivy.properties import BooleanProperty, ObjectProperty
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 from kivy.lang import Builder
 
-
 import cv2
 
-
 from eagleeye import camera
-from kguirun import RunScreen
 
 
 
-class ScreenManag(ScreenManager):
-    runscreen = ObjectProperty(None)
-
-
-
-
-class MainApp(MDApp):
-    Builder.load_file('kv/main.kv')
-    def __init__(self):
-        super().__init__()
-        self.cam = camera.Camera(300)
+class RunScreen(Screen):
     
-    def build(self):
-        self.theme_cls.primary_palette =  "Blue"
-        self.theme_cls.primary_hue =  "900"
-        self.theme_cls.theme_style = "Dark"
+    frame = ObjectProperty(None)
+    
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        self.video_state = False
+        self.frame = None
+
+
+    def on_run_camera(self):
+        ...
+
+
+from kivy.app import App
+from kivy.uix.image import Image 
+from kivy.clock import Clock 
+from kivy.graphics.texture import Texture 
+import cv2 
+from kivy.uix.boxlayout import BoxLayout 
+from kivy.uix.gridlayout import GridLayout 
+from kivy.uix.widget import Widget 
+from kivy.uix.button import Button 
+
+
+
+
+
+
+if __name__ == "__main__":
+    
+    class Test(MDApp):
+        #generaldataview = ObjectProperty(None)
+        Builder.load_file('kv/kguirunscreen.kv')
+        def __init__(self):
+            super(Test,self).__init__()
         
-        return ScreenManag()
-    
-
-
-if __name__ == '__main__':
-    app = MainApp()
-    app.run()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        def build(self):
+            return RunScreen()
+    Test().run()
 
 
 
