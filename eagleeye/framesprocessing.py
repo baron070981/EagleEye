@@ -1,7 +1,8 @@
+from random import randint
+from typing import Union
+
 import cv2
 import numpy as np
-
-from typing import Union
 
 # обработка кадра или его части
 
@@ -17,9 +18,26 @@ class Frame:
         self.__sections = None
         self.__coords = []
         self.__origin_size = None
+        self.__points_coords = []
+        self.__num_points = self.num_sections
     
+    
+    def get_checkpoints_coords(self, size: Union[tuple, list], num_points=None):
+        self.__num_points = self.__num_points if num_points is None else num_points
+    
+    
+    def get_rand_checkpoints_coords(self, size: Union[tuple, list], num_points=None):
+        # size: (h, w)
+        self.__num_points = self.__num_points if num_points is None else num_points
+        for i in range(self.__num_points):
+            y = randint(6, size[0]-6)
+            x = randint(6, size[1]-6)
+            coord = (y, y+4, x, x+4)
+            self.__points_coords.append(coord)
+        return self.__points_coords
     
     def __get_num_sections(self, size: tuple):
+        # size: (h, w)
         # вычисление количества секций и нового размера изображения
         # размер меняется чтоб секции влезли без остатка
         h, w = size
@@ -84,11 +102,17 @@ class Frame:
         return means
     
     
-    def get_means(self, gray: np.array) -> list:
+    def get_means(self, gray: np.array, mode='sect') -> list:
         # среднее значение каждой секции
-        ysec, xsec = self.__sections
+        coords = []
         means = []
-        for y1,y2,x1,x2 in self.coords:
+        if mode == 'sect':
+            coords = self.__coords
+        elif mode == 'points':
+            if not self.__points_coords:
+                raise Exception('Нет созданных контрольных точек')
+            coords = self.__points_coords
+        for y1,y2,x1,x2 in coords:
             tmp = gray[y1:y2, x1:x2]
             means.append(tmp.mean())
         return means
@@ -114,7 +138,7 @@ class Frame:
     
     
     def get_diff_percentege(self, num1, num2):
-        return self.__percentege(num1, num2)
+        return 100 - self.__percentege(num1, num2)
     
     
     def get_percentege_threshold(self, num1, num2, threshold):

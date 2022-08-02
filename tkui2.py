@@ -17,10 +17,11 @@ from eagleeye import files
 from eagleeye import textprocessing as tp
 from eagleeye import datestimes as dt
 import utils
+import settings
 
 
 
-class RunCameraWndow(tk.Tk):
+class RunCameraWindow(tk.Tk):
     
     def __init__(self):
         super().__init__()
@@ -36,8 +37,6 @@ class RunCameraWndow(tk.Tk):
     
     def close(self):
         self.destroy()
-
-
 
 
 
@@ -101,6 +100,10 @@ class WidgetsRunCamera:
         self.num_saved_var.set('3')
         self.num_sections_var = tk.StringVar()
         self.num_sections_var.set('21')
+        self.threshold_var = tk.StringVar()
+        self.threshold_var.set(str(self.THRESHOLD))
+        self.diff_perc_var = tk.StringVar()
+        self.diff_perc_var.set(str(self.DIFFERENCE_PERC))
         
         # размер родительскокго окна
         self.master_w, self.master_h = self.__get_master_size(master)
@@ -180,6 +183,24 @@ class WidgetsRunCamera:
                                        width=10)
         self.NUM_SECTIONS = int(self.num_sect_entry.get())
         
+        self.threshold_label = tk.Label(self.control_frame,
+                                       height=1,
+                                       text='Порог(проц): ')
+        
+        self.threshold_entry = tk.Entry(self.control_frame, 
+                                       textvariable=self.threshold_var,
+                                       justify=tk.CENTER,
+                                       width=10)
+        
+        self.diff_perc_label = tk.Label(self.control_frame,
+                                       height=1,
+                                       text='Разница секций:')
+        
+        self.diff_perc_entry = tk.Entry(self.control_frame, 
+                                       textvariable=self.diff_perc_var,
+                                       justify=tk.CENTER,
+                                       width=10)
+        
         # кнопка запуска и остановки приложения, но не выхода из него.
         self.btn = tk.Button(master, 
                              command=self.run, 
@@ -216,6 +237,10 @@ class WidgetsRunCamera:
         self.num_saved_img_entry.grid(row=2, column=1, sticky='nw')
         self.num_sect_label.grid(row=3, column=0, sticky='nw')
         self.num_sect_entry.grid(row=3, column=1, sticky='nw')
+        self.threshold_label.grid(row=4, column=0, sticky='nw')
+        self.threshold_entry.grid(row=4, column=1, sticky='nw')
+        self.diff_perc_label.grid(row=5, column=0, sticky='nw')
+        self.diff_perc_entry.grid(row=5, column=1, sticky='nw')
         
         
         
@@ -242,12 +267,14 @@ class WidgetsRunCamera:
     
     
     def update_settings(self):
-        self.saving.update_interval(self.interval_scale.get())
+        setting_save = self.saving.update_interval(self.interval_scale.get())
         
         sleep = self.sleep_entry.get()
         sleep = utils.valedate_str_to_float(sleep,min_val=1, max_val=900)
-        self.SLEEP_TIME = sleep
-        self.timer.interval = sleep
+        if sleep != self.SLEEP_TIME:
+            setting_save = True
+            self.SLEEP_TIME = sleep
+            self.timer.interval = sleep
         
         num_saved = self.num_saved_img_entry.get()
         num_saved = utils.valedate_str_to_int(num_saved,min_val=2, max_val=20)
@@ -256,6 +283,13 @@ class WidgetsRunCamera:
         num_sections = self.num_sect_entry.get()
         num_sections = utils.valedate_str_to_int(num_sections,min_val=2, max_val=100)
         self.frameproc.update(num_sections)
+        
+        diff_perc = self.diff_perc_entry.get()
+        self.DIFFERENCE_PERC = utils.valedate_str_to_int(diff_perc, min_val=1, max_val=100)
+        
+        thresh = self.threshold_entry.get()
+        self.THRESHOLD = utils.valedate_str_to_int(thresh, min_val=1, max_val=100)
+        
     
     
     def run(self):
@@ -369,7 +403,7 @@ class WidgetsRunCamera:
 
 
 if __name__ == "__main__":
-    root = RunCameraWndow()
+    root = RunCameraWindow()
     wid = WidgetsRunCamera(root)
     
     wid.update_text()

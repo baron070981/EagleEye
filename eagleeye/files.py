@@ -209,32 +209,9 @@ class SaveFrames:
             self.interval = interval
             self.timer.interval = self.interval
             self.reset_times
+            return True
+        return False
     
-    
-class SettingsFile:
-    
-    fields = []
-    
-    def __new__(self):
-        ...
-    
-    def __init__(self):
-        ...
-    
-    
-    def read(self):
-        ...
-    
-    
-    def write(self, **kwargs):
-        ...
-    
-    
-    def update(self, key, val):
-        ...
-
-
-
 
 
 

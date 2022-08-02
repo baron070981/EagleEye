@@ -6,6 +6,7 @@ import datetime
 import camera
 import framesprocessing
 import files
+import datestimes as dt
 
 
 def get_mean_colors(array):
@@ -41,47 +42,40 @@ def get_perc(image_mean):
 
 
 
+
+
+
+
 if __name__ == "__main__":
-    ID = 0
-    # 
-    frame = framesprocessing.Frame(21)
-    f = files.Files('images', 1000, waiting_time=15, num_save=4)
-    # 
-    cam = camera.Camera(800, camera_id=ID)
-    # 
-    timer = files.Timer(7)
-    CLEAR = False  # флаг очистки экрана от вывода движения
-    last_means = None  # предыдущий кадр
-    CHANGED = []
-    cv2.namedWindow('img')
+    
+    frame = framesprocessing.Frame(50)
+    cam = camera.Camera(800, camera_id=2)
+    
+    GET_POINTS = True
+    points1 = []
+    last_means = []
+    changed = []
+    
     while True:
         
-        origin = cam.get_frame(flip=True, resize=True)
-        new_frame = frame.resize(origin)
-        means = frame.get_means_color(new_frame)
-        cv2.putText(origin, get_timestr(), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,50,250), 2)
-        if last_means:
-            for i, m in enumerate(means):
-                if frame.get_percentege3(m, last_means[i]) >= 17:
-                    CHANGED.append(frame.coords[i])
-        if len(CHANGED)/(len(means)/100) >= 8 and not CLEAR:
-            cv2.imshow('img', origin)
-            f.save(origin)
-            if f.is_interval():
-                timer.start
-        if timer.stop:
-            f.reset_times
-                    
-        last_means = means
-        CLEAR = not CLEAR
-        CHANGED = []
-        key = cv2.waitKey(1)
-        if key in (27, 13):
-            cam.close()
+        origin = cam.get_frame(resize=True)
+        gray = cv2.cvtColor(origin, cv2.COLOR_BGR2GRAY)
+        cv2.putText(origin, dt.get_timestr(), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 3)
+        
+        if cam.is_key(27, t=1):
             break
         
-        # cv2.imshow('video', origin)
+        if GET_POINTS:
+            points1 = frame.get_rand_checkpoints_coords(gray.shape[:2])
+            points2 = frame.get_rand_checkpoints_coords(gray.shape[:2])
+            GET_POINTS = False
         
+        current_means = frame.get_means(gray, 'points')
+        
+        last_means = current_means.copy()
+        cv2.imshow('video', origin)
+    
+    
     
     cam.close()
 
