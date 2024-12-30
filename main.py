@@ -583,15 +583,7 @@ class Widgets:
             # ===============================================================================================
             # ============== проверка условий для сохранения и сохранение изображений =======================
             # ===============================================================================================
-            '''
-            если - сохранение запрещено
-                 оба таймера отключены
-                 процент отличающихся секций выше или равен заданному значению
-            то - разрешается сохранение
-                 сохраняется первый кадр
-                 включается первый таймер интервалов сохранений между кадрами
-                 при сохранении заданного кол-ва кадров включается второй таймер, запрещается сохранение
-            '''
+            
             diff_between_sect = stringvar2int(self.diff_between_sect_var, '20', 20)
             is_percent_limit = percent_sections >= diff_between_sect
 
@@ -606,13 +598,19 @@ class Widgets:
                     self.time_between_saves.start()
                     filename = file.get_file_name(self.counter_all_saves, SAVES_DIR)
                     self.out_text.insert(0, str(filename))
-                    print('first save', self.counter_all_saves, round(time.time() % 100, 2))
+                    # print('first save', self.counter_all_saves, round(time.time() % 100, 2))
+                    save_image_size = fp.get_new_size(frame, width=1280)
+                    save_image = cv2.resize(frame, save_image_size, cv2.INTER_NEAREST)
+                    cv2.imwrite(filename, save_image)
                 if self.time_between_saves.signal():
                     self.counter_all_saves += 1
                     self.COUNTER_SAVES += 1
                     filename = file.get_file_name(self.counter_all_saves, SAVES_DIR)
                     self.out_text.insert(0, str(filename))
-                    print('seconds saves', self.counter_all_saves, round(time.time() % 100, 2))
+                    # print('seconds saves', self.counter_all_saves, round(time.time() % 100, 2))
+                    save_image_size = fp.get_new_size(frame, width=1280)
+                    save_image = cv2.resize(frame, save_image_size, cv2.INTER_NEAREST)
+                    cv2.imwrite(filename, save_image)
             num_saves = stringvar2int(self.num_saves_var, '5', 5)
             if self.COUNTER_SAVES >= num_saves:
                 print('Включение таймера ожидания', round(time.time() % 100, 2))
