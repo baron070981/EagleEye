@@ -13,7 +13,7 @@ from rich import print, inspect
 from eagleeye import frameproc as fp
 from eagleeye import camera
 from eagleeye import times
-from eagleeye import file
+from eagleeye import files
 
 
 def get_percent_diff(val1, val2):
@@ -596,7 +596,7 @@ class Widgets:
                     self.counter_all_saves += 1
                     self.COUNTER_SAVES += 1
                     self.time_between_saves.start()
-                    filename = file.get_file_name(self.counter_all_saves, SAVES_DIR)
+                    filename = files.get_file_name(self.counter_all_saves, SAVES_DIR)
                     self.out_text.insert(0, str(filename))
                     # print('first save', self.counter_all_saves, round(time.time() % 100, 2))
                     save_image_size = fp.get_new_size(frame, width=1280)
@@ -605,7 +605,7 @@ class Widgets:
                 if self.time_between_saves.signal():
                     self.counter_all_saves += 1
                     self.COUNTER_SAVES += 1
-                    filename = file.get_file_name(self.counter_all_saves, SAVES_DIR)
+                    filename = files.get_file_name(self.counter_all_saves, SAVES_DIR)
                     self.out_text.insert(0, str(filename))
                     # print('seconds saves', self.counter_all_saves, round(time.time() % 100, 2))
                     save_image_size = fp.get_new_size(frame, width=1280)
