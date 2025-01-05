@@ -3,6 +3,7 @@ from pathlib import Path
 import datetime
 from random import randint
 import time
+import subprocess as sp
 
 import tkinter as tk
 from tkinter import ttk
@@ -14,6 +15,7 @@ from eagleeye import frameproc as fp
 from eagleeye import camera
 from eagleeye import times
 from eagleeye import files
+from tbot import tbot
 
 
 def get_percent_diff(val1, val2):
@@ -124,6 +126,9 @@ class Widgets:
         self.out_text = []
 
         self.START_BTN_PRESSED = False
+        self.START_BOT_BTN_PRESSED = False
+        self.STOP_BOT_BTN_PRESSED = True
+        self.PAUSE_BOT_BTN_PRESSED = False
         self.CAMERA_IS_RUN = False
         self.BOT_START = False
         self.BOT_PAUSE = False
@@ -320,11 +325,11 @@ class Widgets:
     def create_bot_widgets(self, master):
         ...
         self.btn_stop_bot = tk.Button(master, text='stop', width=10, font=self.default_font(16),
-                                      bg=self.not_active_btn, fg=self.color_orange2)
+                                      bg=self.not_active_btn, fg=self.color_orange2, command=self.stop_bot)
         self.btn_pause_bot = tk.Button(master, text='pause', width=10, font=self.default_font(16),
                                       bg=self.not_active_btn, fg=self.color_orange2)
         self.btn_start_bot = tk.Button(master, text='start', width=10, font=self.default_font(16),
-                                      bg=self.not_active_btn, fg=self.color_orange2)
+                                      bg=self.not_active_btn, fg=self.color_orange2, command=self.start_bot)
     
     def create_output_widgets(self, master):
         self.info_text_saves = tk.Label(master, textvariable=self.info_text_save_var, bg=self.window_bg,
@@ -491,9 +496,28 @@ class Widgets:
             # self.info_text_saves.update()
         self.info_text_saves.after(30, self.update_text)
 
+    def start_bot(self):
+        if not self.START_BOT_BTN_PRESSED:
+            ...
+            sp.run(['python', '/home/baron/coding/Python/EagleEye/tbot/tbot.py'])
+            self.START_BOT_BTN_PRESSED = True
+            self.STOP_BOT_BTN_PRESSED = False
+
+    def stop_bot(self):
+        if self.START_BOT_BTN_PRESSED:
+            self.START_BOT_BTN_PRESSED = False
+            self.STOP_BOT_BTN_PRESSED = True
+
     def run(self):
         self.out_text = self.out_text[:20]
         self.info_text_save_var.set('\n'.join(self.out_text))
+
+        if self.START_BOT_BTN_PRESSED and not self.STOP_BOT_BTN_PRESSED:
+            # tbot.bot.infinity_polling()
+            ...
+        elif not self.START_BOT_BTN_PRESSED and self.STOP_BOT_BTN_PRESSED:
+            # tbot.bot.
+            ...
 
         if self.START_BTN_PRESSED:
             if self.TIME_CONTROL:
@@ -602,6 +626,7 @@ class Widgets:
                     save_image_size = fp.get_new_size(frame, width=1280)
                     save_image = cv2.resize(frame, save_image_size, cv2.INTER_NEAREST)
                     cv2.imwrite(filename, save_image)
+                    self.out_save_image = fp.resize_frame(frame, 420)
                 if self.time_between_saves.signal():
                     self.counter_all_saves += 1
                     self.COUNTER_SAVES += 1
@@ -611,6 +636,7 @@ class Widgets:
                     save_image_size = fp.get_new_size(frame, width=1280)
                     save_image = cv2.resize(frame, save_image_size, cv2.INTER_NEAREST)
                     cv2.imwrite(filename, save_image)
+                    self.out_save_image = fp.resize_frame(frame, 420)
             num_saves = stringvar2int(self.num_saves_var, '5', 5)
             if self.COUNTER_SAVES >= num_saves:
                 print('Включение таймера ожидания', round(time.time() % 100, 2))
@@ -634,7 +660,6 @@ class Widgets:
 
             cv2.waitKey(1)
             self.camera.show(frame)
-            self.camera.show(proc_frame, 'proc frames')
             self.camera.show(self.out_save_image, 'save image')
         elif not self.CAMERA_IS_RUN and self.START_BTN_PRESSED:
             self.camera.close()
