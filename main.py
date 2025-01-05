@@ -660,6 +660,7 @@ class Widgets:
 
             cv2.waitKey(1)
             self.camera.show(frame)
+            # self.camera.show(proc_frame, 'proc frames')
             self.camera.show(self.out_save_image, 'save image')
         elif not self.CAMERA_IS_RUN and self.START_BTN_PRESSED:
             self.camera.close()
