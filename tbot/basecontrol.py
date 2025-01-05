@@ -33,6 +33,7 @@ class Directory(BaseDirectory):
         self.__path = Path(path)
     
     def __find(self, *ext) -> filter:
+        exts = set(['.jpg', '.jpeg', '.png', '.gif'] + list(exts))
         if not ext: return filter(lambda x: x, self.__path.iterdir())
         files = filter(lambda x: x.is_file(), self.__path.iterdir())
         files = filter(lambda x: x.suffix in ext, files)
@@ -97,7 +98,6 @@ class Directory(BaseDirectory):
             f.unlink(missing_ok=True)
     
     def clear(self, *exts, num_files:int|None=None, side:int=0):
-        exts = ['.jpg', '.jpeg'] + list(exts)
         if num_files:
             files = self.files(*exts)[:num_files] if side == 0 else self.files(*exts)[-num_files:]
             [f.unlink() for f in files]
