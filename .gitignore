@@ -134,6 +134,10 @@ images
 .images
 notes.txt
 
+archive/
 saving/
+test_archive/
+test_save/
+test_save_tmp/
 tbot_secrets.py
 
