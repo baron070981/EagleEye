@@ -159,7 +159,9 @@ def messages_parser(msg):
                 print(f'Удалено из базы: {num} фото')
                 bot.send_message(msg.chat.id, f'Удалено из базы {num} фото')
                 base.clear(num_files=num, side=1)
-            case '/arch': bot.send_message(msg.chat.id, f'command: {cmd.replace("/", "")}, val: {num}')
+            case '/arch':
+                print(f'command: {cmd.replace("/", "")}, val: {num}')
+                
             case '/archlast': bot.send_message(msg.chat.id, f'command: {cmd.replace("/", "")}, val: {num}')
             case '/setget': bot.send_message(msg.chat.id, f'command: {cmd.replace("/", "")}, val: {num}')
             case '/setarch': bot.send_message(msg.chat.id, f'command: {cmd.replace("/", "")}, val: {num}')
