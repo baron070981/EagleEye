@@ -8,12 +8,6 @@ from dataclasses import dataclass
 from rich import print, inspect
 
 
-# переменные с путями к базе и архиву
-# удаление из базы и архива
-# перенос из базы в архив
-# удаление с конца
-# полное удаление из базы и из архива
-
 @dataclass
 class DefaultsValues:
     num_get_photos:int = 5
@@ -55,17 +49,6 @@ class Directory(BaseDirectory):
     @property
     def path(self):
         return self.__path
-
-    # def delete(self, *exts, num_del:int|None=None):
-    #     files = sorted(self.__find(), key=lambda x: x.stat().st_ctime)
-    #     if not files: return
-    #     if num_del is None or num_del <= 0:
-    #         for f in files:
-    #             f.unlink(missing_ok=True)
-    #         return
-    #     files = files[:num_del]
-    #     for f in files:
-    #         f.unlink(missing_ok=True)
         
     def moves(self, new_dir:BaseDirectory|str|Path, *exts, move_num:int=0):
         if move_num <= 0: return
