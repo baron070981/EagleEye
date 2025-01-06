@@ -52,7 +52,6 @@ class MainWindow(tk.Tk):
         super().__init__()
         self.bind('<Escape>', self.press_escape)
         self.geometry(f'{self.winfo_screenwidth()}x{self.winfo_screenheight()}')
-        # self.geometry(f'{800}x{600}')
         self.width = self.winfo_screenmmwidth()
         self.height = self.winfo_screenmmheight()
         self.ESCAPE = False
@@ -84,8 +83,7 @@ class Widgets:
         self.active_bot_color = '#DB4842'
 
         # список камер
-        # self.camera = camera.Camera(['save image'])
-        self.camera = camera.Camera(['proc frames', 'save image'])
+        self.camera = camera.Camera(['save image'])
         self.cam_ids = self.camera.ids
 
         # variables
@@ -513,10 +511,8 @@ class Widgets:
         self.info_text_save_var.set('\n'.join(self.out_text))
 
         if self.START_BOT_BTN_PRESSED and not self.STOP_BOT_BTN_PRESSED:
-            # tbot.bot.infinity_polling()
             ...
         elif not self.START_BOT_BTN_PRESSED and self.STOP_BOT_BTN_PRESSED:
-            # tbot.bot.
             ...
 
         if self.START_BTN_PRESSED:
@@ -586,7 +582,6 @@ class Widgets:
 
             # заполнение массива с процентной разницей
             for i, (x1, y1, x2, y2) in enumerate(coords_sect):
-                # cv2.rectangle(proc_frame, (x1, y1), (x2, y2), (50, 50, 50), 1)
                 # текущее среднее значение секции
                 current_mean_value = proc_frame[y1:y2, x1:x2].mean()
                 current_means.append(current_mean_value)
@@ -622,7 +617,6 @@ class Widgets:
                     self.time_between_saves.start()
                     filename = files.get_file_name(self.counter_all_saves, SAVES_DIR)
                     self.out_text.insert(0, str(filename))
-                    # print('first save', self.counter_all_saves, round(time.time() % 100, 2))
                     save_image_size = fp.get_new_size(frame, width=1280)
                     save_image = cv2.resize(frame, save_image_size, cv2.INTER_NEAREST)
                     cv2.imwrite(filename, save_image)
@@ -632,7 +626,6 @@ class Widgets:
                     self.COUNTER_SAVES += 1
                     filename = files.get_file_name(self.counter_all_saves, SAVES_DIR)
                     self.out_text.insert(0, str(filename))
-                    # print('seconds saves', self.counter_all_saves, round(time.time() % 100, 2))
                     save_image_size = fp.get_new_size(frame, width=1280)
                     save_image = cv2.resize(frame, save_image_size, cv2.INTER_NEAREST)
                     cv2.imwrite(filename, save_image)
@@ -660,7 +653,6 @@ class Widgets:
 
             cv2.waitKey(1)
             self.camera.show(frame)
-            # self.camera.show(proc_frame, 'proc frames')
             self.camera.show(self.out_save_image, 'save image')
         elif not self.CAMERA_IS_RUN and self.START_BTN_PRESSED:
             self.camera.close()
@@ -717,7 +709,6 @@ if __name__ == '__main__':
     widgets = Widgets(window)
     widgets.widgets()
     widgets.run()
-    # widgets.update_text()
 
     window.mainloop()
 
