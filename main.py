@@ -663,6 +663,7 @@ class Widgets:
         
         elif not self.CAMERA_IS_RUN and not self.START_BTN_PRESSED:
             self.camera.close()
+            self.last_means = []
             if self.camera.cam_id != int(self.check_camera_id.get()):
                 self.camera.set_camera_id(int(self.check_camera_id.get()))
             self.time_between_saves.stop()
