@@ -27,7 +27,7 @@ class Directory(BaseDirectory):
         self.__path = Path(path)
     
     def __find(self, *ext) -> filter:
-        exts = set(['.jpg', '.jpeg', '.png', '.gif'] + list(exts))
+        ext = set(['.jpg', '.jpeg', '.png', '.gif'] + list(ext))
         if not ext: return filter(lambda x: x, self.__path.iterdir())
         files = filter(lambda x: x.is_file(), self.__path.iterdir())
         files = filter(lambda x: x.suffix in ext, files)
@@ -50,20 +50,25 @@ class Directory(BaseDirectory):
     def path(self):
         return self.__path
         
-    def moves(self, new_dir:BaseDirectory|str|Path, *exts, move_num:int=0):
-        if move_num <= 0: return
+    def moves(self, new_dir:BaseDirectory|str|Path, move_num, *exts, side=0):
+        if move_num <= 0: return 0
         if isinstance(new_dir, str):
             new_dir = Path(new_dir)
         elif isinstance(new_dir, BaseDirectory):
             new_dir = new_dir.path
-        files = sorted(self.__find(*exts), key=lambda x: x.stat().st_ctime)[:move_num]
+        files = []
+        if side == 0:
+            files = sorted(self.__find(*exts), key=lambda x: x.stat().st_ctime)[:move_num]
+        else:
+            files = sorted(self.__find(*exts), key=lambda x: x.stat().st_ctime)[-move_num:]
         for f in files:
             print('In mioves:', f)
             f.rename(new_dir/f.name)
+        return len(files)
     
     @staticmethod
     def moves_files(new_dir:BaseDirectory|str|Path, files:list|None=None):
-        if not files: return
+        if not files: return 0
         if isinstance(new_dir, str):
             new_dir = Path(new_dir)
         elif isinstance(new_dir, BaseDirectory):
@@ -72,6 +77,7 @@ class Directory(BaseDirectory):
             if isinstance(f, str):
                 f = Path(f)
             f.rename(new_dir/f.name)
+        return len(files)
     
     @staticmethod
     def delete(files:list):
@@ -79,14 +85,16 @@ class Directory(BaseDirectory):
             if isinstance(f, str):
                 f = Path(f)
             f.unlink(missing_ok=True)
+        return len(files)
     
     def clear(self, *exts, num_files:int|None=None, side:int=0):
         if num_files:
             files = self.files(*exts)[:num_files] if side == 0 else self.files(*exts)[-num_files:]
             [f.unlink() for f in files]
-            return
+            return len(files)
         files = self.files(*exts)
         [f.unlink() for f in files]
+        return len(files)
 
         
 
