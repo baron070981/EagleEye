@@ -96,25 +96,6 @@ class Directory(BaseDirectory):
         [f.unlink() for f in files]
         return len(files)
 
-        
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-    ...
-    base = '/home/baron/coding/Python/EagleEye/tbot/test_save'
-    archive = '/home/baron/coding/Python/EagleEye/tbot/test_archive'
-    
-    save_dir = Directory(base)
-    archive_dir = Directory(archive)
 
     
     

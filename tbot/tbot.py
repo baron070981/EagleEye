@@ -38,9 +38,7 @@ except:
 15. rand - возращает случайное кол-во случайных фото без удаления и перемещения в архив
 """
 
-base_path = '/home/baron/coding/Python/EagleEye/tbot/test_save'
 base_path = '/home/baron/coding/Python/EagleEye/saving/'
-archive_path = '/home/baron/coding/Python/EagleEye/tbot/test_archive'
 archive_path = '/home/baron/coding/Python/EagleEye/archive/'
 
 base = Directory(base_path)
